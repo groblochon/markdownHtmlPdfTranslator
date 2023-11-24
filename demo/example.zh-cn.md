@@ -1,6 +1,6 @@
 ---
 src_language: en
-title: 把事情做好：我的收获
+title: 'Get Things Done: My Take Away'
 ---
 
 *(This essay is translated from en)*
@@ -19,7 +19,8 @@ title: 把事情做好：我的收获
 
 让我们用一些`python`代码块进行测试：
 
- ```python
+ 
+```python
 import os
 
 def get_output_file_name(filepath: str, target_language: str):

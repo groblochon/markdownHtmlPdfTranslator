@@ -17,7 +17,8 @@ src_language: en
 ###  Python版本
 
 1. 打开[translate.py](src/python/translate.py)文件；
-2. 安装所有依赖库：```bash
+2. 安装所有依赖库：
+```bash
 pip3 install python-frontmatter markdown2 markdownify translators google-cloud-translate
 ```
 3. 通过`python3 src/python/translate.py {md_file_path|md_dir_path}`运行 python 代码
