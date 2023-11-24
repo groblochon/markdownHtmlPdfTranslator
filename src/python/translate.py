@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Desc: Translate md in content dir
 # -*- coding:utf-8 -
-# pip3 install python-frontmatter markdown2 markdownify translators
-# pip3 install google-cloud-translate  # google translate api
+# pip3 install python-frontmatter markdown2 markdownify translators google-cloud-translate
 
+import sys
 import frontmatter
 import os
 import uuid
@@ -28,7 +28,7 @@ TARGET_LANGUAGES = ['en', 'zh-CN', 'zh-TW']
 SRC_LANGUAGE_KEY = 'src_language'
 
 # use charged google translate api or not
-IS_CHARGED = True
+IS_CHARGED = False
 # for CHARGED google translate api
 GOOGLE_TRANSLATE_PROJECT_ID="unique-nebula-402902"
 
@@ -142,8 +142,12 @@ def extract_code_blocks(md_content):
     return text_without_code, code_blocks, unique_placeholder
 
 
-def reinsert_code_blocks(translated_text, code_blocks, placeholder):
-    return translated_text.replace(placeholder, '{}', len(code_blocks)).format(*code_blocks)
+def reinsert_code_blocks(translated_text: str, code_blocks, placeholder):
+    parts = translated_text.split(placeholder)
+    result = parts[0]
+    for i in range(len(code_blocks)):
+        result += code_blocks[i] + parts[i + 1]
+    return result
 
 
 def translate_content(content, from_language, to_language):
@@ -184,8 +188,8 @@ def insert_space_for_cn(md_text):
 
 # How to use:
 # 1. Translate one file
-file = 'README.md'
-translate_md(file)
+# file = 'demo/example.md'
+# translate_md(file)
 #
 # 2. Translate all files
 # content_dir = '/Users/gaoxiang/Public/github/xiangaoole.github.io-tmp/content/post/'
@@ -195,13 +199,13 @@ translate_md(file)
 # content_dir = '/Users/gaoxiang/Public/github/xiangaoole.github.io-tmp/content/'
 # remove_translated_files(content_dir)
 
-# if __name__ == '__main__':
-#     filename = sys.argv[1]
-#     # is file or dir
-#     if os.path.isfile(filename):
-#         translate_md(filename)
-#     elif os.path.isdir(filename):
-#         translate_md_in_dir(filename)
-#     else:
-#         print(f"Error: {filename} is not a file or dir.")
-#         exit(1)
+if __name__ == '__main__':
+    filename = sys.argv[1]
+    # is file or dir
+    if os.path.isfile(filename):
+        translate_md(filename)
+    elif os.path.isdir(filename):
+        translate_md_in_dir(filename)
+    else:
+        print(f"Error: {filename} is not a file or dir.")
+        exit(1)

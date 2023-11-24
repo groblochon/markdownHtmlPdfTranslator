@@ -4,11 +4,11 @@ src_language: en
 
 *(This essay is translated from en)*
 
+[English](README.en.md) |[简体中文](README.zh-cn.md)|[繁体中文](README.zh-tw.md)
+
 # md-翻译
 
-翻译 markdown 文件，例如从`eng`到`zh-CN` 。代码块不会被翻译。
-
-[简体中文](README.zh-cn.md)|[繁体中文](README.zh-tw.md)
+翻译 markdown 文件，例如从`en`到`zh-CN` 。代码块不会被翻译。
 
 ## 如何使用？
 
@@ -17,11 +17,12 @@ src_language: en
 ###  Python版本
 
 1. 打开[translate.py](src/python/translate.py)文件；
-2. 安装所有依赖库： `pip3 install python-frontmatter markdown2 markdownify translators` ；
-3. 将脚本中的`file`值更改为您的文件路径；
-4. 通过`python3 src/python/translate.py`运行 python 代码
+2. 安装所有依赖库：```bash
+pip3 install python-frontmatter markdown2 markdownify translators google-cloud-translate
+```
+3. 通过`python3 src/python/translate.py {md_file_path|md_dir_path}`运行 python 代码
 
-默认 python 配置使用`Translator.FREE` ，这取决于`translators`库。它是一个免费的非官方谷歌翻译库。如果您想使用更准确的 Google 翻译服务，您应该配置自己的[Authenticate to Cloud Translation](https://cloud.google.com/translate/docs/authentication) ，然后使用`Translator.CHARGED` 。
+默认 python 配置使用`Translator.FREE` ，这取决于`translators`库。它是一个免费的非官方谷歌翻译库。如果您想使用更准确的 Google 翻译服务，您应该配置自己的[云翻译身份验证](https://cloud.google.com/translate/docs/authentication)并更改 python 脚本中的配置部分。
 
 ## 它是如何工作的？
 
