@@ -123,7 +123,9 @@ def translate_md(path):
         # post['title'] = TRANSLATOR(origin_title, src_language, lang, ContentType.TEXT)
 
         # add translated desc
-        translated_desc = f"*(This essay is translated from {src_language})*\n\n"
+        translated_url = get_translated_url(path, src_language)
+        print(f"\t{translated_url}")
+        translated_desc = f"*(This essay is translated from [{src_language}]({translated_url} \"Original Essay Link\"))*\n\n"
         # translate content
         post.content = translated_desc + translate_content(origin_content, src_language, lang)
 
@@ -132,6 +134,15 @@ def translate_md(path):
         print(f"\t{new_path} created.")
     
     print(f"\n{path}:\n\tTranslated from {src_language} to {target_languages}.")
+
+
+def get_translated_url(path, lang: str):
+    print(f"\nGetting translated url for {path}...")
+    directory, filename = os.path.split(path)
+    base_name, ext = os.path.splitext(filename)
+    segment = f"{base_name}.{lang.lower()}{ext}"
+
+    return f"{segment}"
 
 
 def extract_code_blocks(md_content):

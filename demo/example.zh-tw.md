@@ -3,7 +3,7 @@ src_language: en
 title: 'Get Things Done: My Take Away'
 ---
 
-*(This essay is translated from en)*
+*(This essay is translated from [en](example.en.md "Original Essay Link"))*
 
 *《Get Things Done》*是大衛艾倫（David Allen）撰寫的一本自助書籍，介紹了安排日常任務的一些基本方法，以便您可以過上富有成效且無壓力的生活。這是我的收穫。
 
