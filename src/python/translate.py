@@ -67,7 +67,7 @@ def charged_translate(text, from_language, to_language, content_type=ContentType
             "parent": f"projects/{GOOGLE_TRANSLATE_PROJECT_ID}/locations/global",
             "contents": [text],
             "mime_type": content_type.value, # https://cloud.google.com/translate/docs/supported-formats
-            "source_language_code": from_language,
+            "source_language_code": None if from_language == 'auto' else from_language,
             "target_language_code": to_language,
         }
     )
@@ -104,11 +104,12 @@ def translate_md_in_dir(dir):
 def translate_md(path):
     print(f"\nTranslating {path}...")
     post = frontmatter.load(path)
-    if SRC_LANGUAGE_KEY not in post.metadata:
-        print(f"\n{path}:\n\tNo {SRC_LANGUAGE_KEY} found in markdown header, skip.")
-        return
-    
-    src_language = post[SRC_LANGUAGE_KEY] or 'auto'
+
+    src_language = 'auto'
+    if SRC_LANGUAGE_KEY in post.metadata:
+        print(f"\n{path}:\n\tNo {SRC_LANGUAGE_KEY} found in markdown header, use auto.")
+        src_language = post[SRC_LANGUAGE_KEY]
+
     target_languages = [lang for lang in TARGET_LANGUAGES if lang.lower() != src_language.lower()]
 
     # 1. save original file
@@ -147,7 +148,8 @@ def get_translated_url(path, lang: str):
 
 
 def extract_code_blocks(md_content):
-    unique_placeholder = str(uuid.uuid4().int) + str(random.randint(1000, 9999)) # Generates a unique identifier
+    # untranslated placeholder
+    unique_placeholder = f"{str(uuid.uuid4().int)}" # Generates a unique identifier
     pattern = re.compile(r'(```.*?```)', re.DOTALL)
     code_blocks = pattern.findall(md_content)
     text_without_code = pattern.sub(unique_placeholder, md_content)
@@ -169,6 +171,9 @@ def translate_content(content, from_language, to_language):
     md_without_code = html2md(html_content, heading_style="ATX", bullets="-", escape_underscores=False, )
     if IS_INSERT_SPACE_FOR_CN and to_language.startswith('zh'):
         md_without_code = insert_space_for_cn(md_without_code)
+    
+    print(f"\tTranslated code blocks: {len(code_blocks)}")
+    print(f"\tTranslated placeholders: {md_without_code.count(placeholder)}")
     md_content = reinsert_code_blocks(md_without_code, code_blocks, placeholder)
     return md_content
 
