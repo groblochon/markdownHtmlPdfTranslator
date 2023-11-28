@@ -4,6 +4,7 @@
 # pip3 install python-frontmatter markdown2 markdownify translators google-cloud-translate
 
 import sys
+import random
 import frontmatter
 import os
 import uuid
@@ -146,7 +147,7 @@ def get_translated_url(path, lang: str):
 
 
 def extract_code_blocks(md_content):
-    unique_placeholder = str(f"{uuid.uuid4()}")  # Generates a unique identifier
+    unique_placeholder = str(uuid.uuid4().int) + str(random.randint(1000, 9999)) # Generates a unique identifier
     pattern = re.compile(r'(```.*?```)', re.DOTALL)
     code_blocks = pattern.findall(md_content)
     text_without_code = pattern.sub(unique_placeholder, md_content)
