@@ -105,10 +105,11 @@ def translate_md(path):
     print(f"\nTranslating {path}...")
     post = frontmatter.load(path)
 
-    src_language = 'auto'
     if SRC_LANGUAGE_KEY in post.metadata:
-        print(f"\n{path}:\n\tNo {SRC_LANGUAGE_KEY} found in markdown header, use auto.")
         src_language = post[SRC_LANGUAGE_KEY]
+    else:
+        print(f"\n{path}:\n\tNo {SRC_LANGUAGE_KEY} found in markdown header, use auto.")
+        src_language = 'auto'
 
     target_languages = [lang for lang in TARGET_LANGUAGES if lang.lower() != src_language.lower()]
 
