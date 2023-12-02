@@ -173,6 +173,7 @@ def translate_content(content, from_language, to_language):
     if IS_INSERT_SPACE_FOR_CN and to_language.startswith('zh'):
         md_without_code = insert_space_for_cn(md_without_code)
     
+    placeholder = TRANSLATOR(placeholder, from_language, to_language).strip()
     print(f"\tTranslated code blocks: {len(code_blocks)}")
     print(f"\tTranslated placeholders: {md_without_code.count(placeholder)}")
     md_content = reinsert_code_blocks(md_without_code, code_blocks, placeholder)
