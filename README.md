@@ -4,7 +4,7 @@ src_language: "en"
 
 [English](README.en.md) | [简体中文](README.zh-cn.md) | [繁體中文](README.zh-tw.md)
 
-# md-translate
+# Markdown Translator
 
 Translate markdown file, like from `en` to `zh-CN`. Code blocks will not be translated.
 
