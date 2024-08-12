@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-// yarn add @google-cloud/translate marked turndown gray-matter uuid prettier
+// yarn add @google-cloud/translate marked turndown gray-matter uuid prettier google-translate-api
 
+// const translate = require("google-translate-api");
+const translate = require('@iamtraction/google-translate');
 const { TranslationServiceClient } = require("@google-cloud/translate");
 const fs = require("fs");
 const path = require("path");
@@ -14,16 +16,22 @@ const prettier = require("prettier");
 const TARGET_LANGUAGES = ["en", "zh-CN", "zh-TW"];
 //#################
 
-const PROJECT_ID = "unique-nebula-402902";
+const PROJECT_ID = "xxxxxx";
 const LOCATION = "global";
 const PARENT = `projects/${PROJECT_ID}/locations/${LOCATION}`;
-
-async function chargedTranslate(
-  text,
-  fromLanguage,
-  toLanguage,
-  contentType = "text/plain"
-) {
+async function freeTranslate(text, fromLanguage, toLanguage, contentType = "text/plain") {
+  try {
+    const { text: translatedText } = await translate(text, {
+      from: fromLanguage,
+      to: toLanguage,
+    });
+    return translatedText;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
+}
+async function chargedTranslate(text, fromLanguage, toLanguage, contentType = "text/plain") {
   const translationClient = new TranslationServiceClient();
   const request = {
     parent: PARENT,
@@ -46,9 +54,12 @@ class Translator {
   static get CHARGED() {
     return chargedTranslate;
   }
+  static get FREE() {
+    return freeTranslate;
+  }
 }
 
-const TRANSLATOR = Translator.CHARGED;
+const TRANSLATOR = Translator.FREE;
 
 async function translateMd(filePath) {
   console.log(`\nTranslating ${filePath}...`);
@@ -79,29 +90,20 @@ async function translateMd(filePath) {
   // Translate to other languages
   for (const lang of targetLanguages) {
     // Translate title
-    post.data.title = await TRANSLATOR(
-      originTitle,
-      srcLanguage,
-      lang,
-      "text/plain"
-    );
+    post.data.title = await TRANSLATOR(originTitle, srcLanguage, lang, "text/plain");
 
     // Add translated description
     const translatedDesc = `*(This essay is translated from ${srcLanguage})*\n\n`;
 
     // Translate content
-    post.content =
-      translatedDesc +
-      (await translateContent(originContent, srcLanguage, lang));
+    post.content = translatedDesc + (await translateContent(originContent, srcLanguage, lang));
 
     const newPath = getOutputFileName(filePath, lang);
     fs.writeFileSync(newPath, matter.stringify(post));
     console.log(`\t${newPath} created.`);
   }
 
-  console.log(
-    `\n${filePath}:\n\tTranslated from ${srcLanguage} to ${targetLanguages}.`
-  );
+  console.log(`\n${filePath}:\n\tTranslated from ${srcLanguage} to ${targetLanguages}.`);
 }
 
 function extractCodeBlocks(mdContent) {
@@ -121,8 +123,7 @@ function reinsertCodeBlocks(translatedText, codeBlocks, placeholder) {
 }
 
 async function translateContent(content, fromLanguage, toLanguage) {
-  const { textWithoutCode, codeBlocks, uniquePlaceholder } =
-    extractCodeBlocks(content);
+  const { textWithoutCode, codeBlocks, uniquePlaceholder } = extractCodeBlocks(content);
 
   // Convert Markdown to HTML
   const htmlContent = marked(textWithoutCode);
@@ -146,11 +147,7 @@ async function translateContent(content, fromLanguage, toLanguage) {
   const mdWithoutCode = turndownService.turndown(translatedHtmlContent);
 
   // Reinsert code blocks
-  const mdContent = reinsertCodeBlocks(
-    mdWithoutCode,
-    codeBlocks,
-    uniquePlaceholder
-  );
+  const mdContent = reinsertCodeBlocks(mdWithoutCode, codeBlocks, uniquePlaceholder);
   // Format the Markdown text
   const formattedText = prettier.format(mdContent, {
     parser: "markdown", // Specify the parser
@@ -170,16 +167,20 @@ function getOutputFileName(filepath, targetLanguage) {
   if (fs.existsSync(bundleDir) && fs.statSync(bundleDir).isDirectory()) {
     return path.join(bundleDir, `index.${targetLanguage.toLowerCase()}${ext}`);
   } else {
-    return path.join(
-      directory,
-      `${baseName}.${targetLanguage.toLowerCase()}${ext}`
-    );
+    return path.join(directory, `${baseName}.${targetLanguage.toLowerCase()}${ext}`);
   }
 }
 
 // How to use:
 // 1. Translate one file
 const file = "demo/example.md";
-translateMd(file)
-  .then(() => console.log("done"))
-  .catch((err) => console.error(err));
+// translateMd(file)
+//   .then(() => console.log("done"))
+//   .catch((err) => console.error(err));
+
+async function translateHello() {
+  const res = await freeTranslate("Hello", "en", "zh-CN");
+  console.log(res);
+}
+
+translateHello();

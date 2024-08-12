@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "@google-cloud/translate": "^8.0.2",
+    "@iamtraction/google-translate": "^2.0.1",
+    "google-translate-api": "^2.3.0",
     "gray-matter": "^4.0.3",
     "marked": "^10.0.0",
     "prettier": "^3.1.0",
