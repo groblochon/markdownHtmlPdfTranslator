@@ -1,0 +1,5 @@
+python-frontmatter
+markdown2
+markdownify
+translators
+google-cloud-translate

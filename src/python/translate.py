@@ -4,7 +4,6 @@
 # pip3 install python-frontmatter markdown2 markdownify translators google-cloud-translate
 
 import sys
-import random
 import frontmatter
 import os
 import uuid
@@ -15,9 +14,11 @@ from google.cloud import translate
 import re
 import shutil
 
+# from extract import MarkdownPDFExtractor
+
 ################################# Config #################################
 # translated to these languages
-TARGET_LANGUAGES = ['en', 'zh-CN', 'zh-TW']
+TARGET_LANGUAGES = ['en']
 
 # src language should be set on markdown file header as 
 # ```markdown
@@ -91,25 +92,25 @@ def remove_translated_files(dir):
             os.remove(full_path)
             print(f"Removing {full_path}...")
 
+
 def translate_md_in_dir(dir):
     # iterate files in dir which endswith ".md" but not ".*.md"
-    pattern = r"^[^.]+\.md$"
+    pattern = r"^[^.]+\.(md|html)$"
+
+    # TODO : pdf is only utf8 :(
+    # pattern = r"^[^.]+\.(md|html|pdf)$"
     for root, dirs, files in os.walk(dir):
         for filename in [file for file in files if re.match(pattern, file)]:
             if not filename.startswith('.'):
                 full_path = os.path.join(root, filename)
-                translate_md(full_path)
+                translate_md(full_path, filename)
 
 
-def translate_md(path):
+def translate_md(path, filename):
     print(f"\nTranslating {path}...")
     post = frontmatter.load(path)
 
-    if SRC_LANGUAGE_KEY in post.metadata:
-        src_language = post[SRC_LANGUAGE_KEY]
-    else:
-        print(f"\n{path}:\n\tNo {SRC_LANGUAGE_KEY} found in markdown header, use auto.")
-        src_language = 'auto'
+    src_language = "zh"
 
     target_languages = [lang for lang in TARGET_LANGUAGES if lang.lower() != src_language.lower()]
 
@@ -117,8 +118,21 @@ def translate_md(path):
     if src_language in TARGET_LANGUAGES:
         shutil.copy(path, get_output_file_name(path, src_language))
 
-    # origin_title = post['title']
-    origin_content = post.content
+    if filename.endswith('.html'):
+        # origin_title = post['title']
+        origin_content = post.content
+        origin_content = html2md(origin_content)
+#    elif filename.endswith('.pdf'):
+#        extractor = MarkdownPDFExtractor(path)
+#        origin_content, markdown_pages = extractor.extract_markdown()
+    else:
+        # origin_title = post['title']
+        origin_content = post.content
+
+    translate_all(src_language, target_languages, path, post, origin_content)
+
+
+def translate_all(src_language, target_languages, path, post, origin_content):
 
     # 2. translate other languages
     for lang in target_languages:
@@ -135,12 +149,10 @@ def translate_md(path):
         new_path = get_output_file_name(path, lang)
         frontmatter.dump(post, new_path)
         print(f"\t{new_path} created.")
-    
+
     print(f"\n{path}:\n\tTranslated from {src_language} to {target_languages}.")
 
-
 def get_translated_url(path, lang: str):
-    print(f"\nGetting translated url for {path}...")
     directory, filename = os.path.split(path)
     base_name, ext = os.path.splitext(filename)
     segment = f"{base_name}.{lang.lower()}{ext}"
@@ -174,8 +186,8 @@ def translate_content(content, from_language, to_language):
         md_without_code = insert_space_for_cn(md_without_code)
     
     placeholder = TRANSLATOR(placeholder, from_language, to_language).strip()
-    print(f"\tTranslated code blocks: {len(code_blocks)}")
-    print(f"\tTranslated placeholders: {md_without_code.count(placeholder)}")
+#    print(f"\tTranslated code blocks: {len(code_blocks)}")
+#    print(f"\tTranslated placeholders: {md_without_code.count(placeholder)}")
     md_content = reinsert_code_blocks(md_without_code, code_blocks, placeholder)
     return md_content
 
@@ -186,9 +198,9 @@ def get_output_file_name(filepath: str, target_language: str):
 
     # Check if the page bundle exists, if so, use the index.xxx.md file
     if os.path.isdir(os.path.join(directory, base_name)):
-        return os.path.join(directory, base_name, f"index.{target_language.lower()}{ext}")
+        return os.path.join(directory, base_name, f"index.{target_language.lower()}.md")
     else:
-        return os.path.join(directory, f'{base_name}.{target_language.lower()}{ext}')
+        return os.path.join(directory, f'{base_name}.{target_language.lower()}.md')
 
 def insert_space_for_cn(md_text):
     # Pattern to match * and ** pairs
@@ -220,11 +232,15 @@ def insert_space_for_cn(md_text):
 
 if __name__ == '__main__':
     filename = sys.argv[1]
-    # is file or dir
-    if os.path.isfile(filename):
-        translate_md(filename)
-    elif os.path.isdir(filename):
-        translate_md_in_dir(filename)
-    else:
-        print(f"Error: {filename} is not a file or dir.")
-        exit(1)
+    try:
+        # is file or dir
+        if os.path.isfile(filename):
+            translate_md(filename)
+        elif os.path.isdir(filename):
+            translate_md_in_dir(filename)
+        else:
+            print(f"Error: {filename} is not a file or dir.")
+            exit(1)
+    except Exception as e:
+        print(f"Error : {e}")
+        print(e)
